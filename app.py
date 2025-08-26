@@ -11,7 +11,7 @@ db = SQLAlchemy(app)
 ### MODELS ###
 class Team(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
+    name = db.Column(db.String(100), unique=True, nullable=False)
     rating = db.Column(db.Float, default=1000.0)
 
 class Tournament(db.Model):
@@ -74,7 +74,7 @@ def match_result(tournament_id):
         
         if team1_id == team2_id:
             return "Teams must be different!"
-
+        
         match = Match(team1_id=team1_id, team2_id=team2_id, winner_id=winner_id, tournament_id=tournament_id)
         db.session.add(match)
 
@@ -92,7 +92,12 @@ def match_result(tournament_id):
 
         db.session.commit()
         return redirect(url_for('view_tournament', tournament_id=tournament_id))
+    
+    # For GET request, show form (optional)
+    tournament = Tournament.query.get_or_404(tournament_id)
+    teams = Team.query.all()
+    return render_template('match_result.html', tournament=tournament, teams=teams)
 
-class Team(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), unique=True, nullable=False)
+if __name__ == '__main__':
+    # Only run app locally, not on Heroku where Gunicorn will run it
+    app.run(debug=True)
