@@ -4,9 +4,24 @@ import os
 
 app = Flask(__name__, template_folder='templates_files')
 
-ratings = {}
-history = {}
-tournaments = {}
+DATA_DIR = "data"
+os.makedirs(DATA_DIR, exist_ok=True)
+
+def load_json(filename):
+    path = os.path.join(DATA_DIR, filename)
+    if os.path.exists(path):
+        with open(path, "r") as f:
+            return json.load(f)
+    return {}
+
+def save_json(filename, data):
+    path = os.path.join(DATA_DIR, filename)
+    with open(path, "w") as f:
+        json.dump(data, f, indent=2)
+
+ratings = load_json("ratings.json")
+history = load_json("history.json")
+tournaments = load_json("tournaments.json")
 
 def expected_score(rating_a, rating_b):
     return 1 / (1 + 10 ** ((rating_b - rating_a) / 400))
@@ -33,6 +48,10 @@ def update_ratings(team_a, team_b, result, tournament):
     history.setdefault(team_a, []).append((team_b, result, round(new_rating_a, 2)))
     history.setdefault(team_b, []).append((team_a, result, round(new_rating_b, 2)))
     tournaments.setdefault(tournament, []).append((team_a, team_b, result))
+
+    save_json("ratings.json", ratings)
+    save_json("history.json", history)
+    save_json("tournaments.json", tournaments)
 
 @app.route("/")
 def index():
@@ -68,29 +87,6 @@ def plot_ratings():
     plt.tight_layout()
     plt.savefig(plot_path)
     return render_template("plot.html", image="ratings.png")
-
-@app.route('/tournament')
-def tournament():
-    teams = Team.query.all()
-    overview = []
-
-    for team in teams:
-        wins = Match.query.filter_by(winner_id=team.id).count()
-        total_matches = Match.query.filter(
-            (Match.team1_id == team.id) | (Match.team2_id == team.id)
-        ).count()
-        losses = total_matches - wins
-
-        overview.append({
-            'name': team.name,
-            'elo': round(team.elo, 2),
-            'wins': wins,
-            'losses': losses,
-            'matches': total_matches
-        })
-
-    return render_template('tournament.html', overview=overview)
-
 
 if __name__ == "__main__":
     app.run(debug=True)
