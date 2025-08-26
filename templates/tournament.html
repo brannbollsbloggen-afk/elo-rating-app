@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>{{ tournament.name }}</h2>
+<a href="{{ url_for('match_result', tournament_id=tournament.id) }}" class="btn btn-success mb-3">Add Match Result</a>
+
+<h3>Matches</h3>
+<ul class="list-group">
+    {% for match in matches %}
+    <li class="list-group-item">
+        {{ match.team1_id }} vs {{ match.team2_id }} → Winner: {{ match.winner_id }} ({{ match.date_played.strftime('%Y-%m-%d') }})
+    </li>
+    {% endfor %}
+</ul>
+{% endblock %}
