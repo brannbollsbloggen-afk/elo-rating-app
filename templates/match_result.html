@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Post Match Result</h2>
+<form method="POST">
+    <select name="team1" class="form-select mb-2">
+        {% for team in teams %}
+        <option value="{{ team.id }}">{{ team.name }}</option>
+        {% endfor %}
+    </select>
+
+    <select name="team2" class="form-select mb-2">
+        {% for team in teams %}
+        <option value="{{ team.id }}">{{ team.name }}</option>
+        {% endfor %}
+    </select>
+
+    <label>Winner:</label>
+    <select name="winner" class="form-select mb-2">
+        {% for team in teams %}
+        <option value="{{ team.id }}">{{ team.name }}</option>
+        {% endfor %}
+    </select>
+
+    <button type="submit" class="btn btn-success">Submit Result</button>
+</form>
+{% endblock %}
