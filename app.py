@@ -69,5 +69,28 @@ def plot_ratings():
     plt.savefig(plot_path)
     return render_template("plot.html", image="ratings.png")
 
+@app.route('/tournament')
+def tournament():
+    teams = Team.query.all()
+    overview = []
+
+    for team in teams:
+        wins = Match.query.filter_by(winner_id=team.id).count()
+        total_matches = Match.query.filter(
+            (Match.team1_id == team.id) | (Match.team2_id == team.id)
+        ).count()
+        losses = total_matches - wins
+
+        overview.append({
+            'name': team.name,
+            'elo': round(team.elo, 2),
+            'wins': wins,
+            'losses': losses,
+            'matches': total_matches
+        })
+
+    return render_template('tournament.html', overview=overview)
+
+
 if __name__ == "__main__":
     app.run(debug=True)
